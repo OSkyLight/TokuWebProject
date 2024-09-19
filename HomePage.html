@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home | Toku Tech</title>
+    <link rel="icon" type="image/jpg" href="source/icon.jpg">
+    <style>
+        .navbar {
+            overflow: hidden;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-left img {
+            height: 50px;
+            width: 50px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-container input[type=text] {
+            padding: 10px;
+            font-size: 17px;
+            border: none;
+        }
+
+        .search-container button {
+            padding: 10px;
+            background: #007bff;
+            font-size: 17px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        .search-container button:hover {
+            background: #0056b3;
+        }
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        li {
+            margin-left: 20px;
+        }
+
+        li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+
+        li a:hover {
+            background-color: #111;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="navbar-left">
+            <img src="source/icon.jpg" alt="Logo">
+            <h1 style="color:white;">Toku Tech</h1>
+        </div>
+        <div class="search-container">
+            <input type="text" placeholder="Search.." style="margin-right: 10px;">
+            <button type="submit">Search</button>
+        </div>
+        <ul>
+            <li><a href="#" style="text-decoration:none;">Profile</a></li>
+        </ul>
+    </div>
+
+    <div id="news-feed"></div>
+
+    <script>
+        var urlParams = new URLSearchParams(window.location.search);
+        var user_id = urlParams.get('user_id');
+
+        function fetchAndDisplayNewsFeed() {
+            var xhr = new XMLHttpRequest();
+            var url = "https://tokusever491.online/phpFiles/getNewFeeds.php";
+            xhr.open("GET", url, true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    var newsFeedContainer = document.getElementById("news-feed");
+                    data.forEach(function (item) {
+                        var newsFeedItem = document.createElement("div");
+                        newsFeedItem.classList.add("news-feed-item");
+
+                        var avatarImg = document.createElement("img");
+                        avatarImg.src = item.user_avatar;
+                        avatarImg.alt = item.user_name + "'s avatar";
+                        avatarImg.classList.add("avatar");
+
+                        var userNameSpan = document.createElement("span");
+                        userNameSpan.textContent = item.user_name;
+                        userNameSpan.classList.add("user-name");
+
+                        var contentPara = document.createElement("p");
+                        contentPara.textContent = item.content;
+                        contentPara.classList.add("content");
+                        newsFeedItem.appendChild(avatarImg);
+                        newsFeedItem.appendChild(userNameSpan);
+                        newsFeedItem.appendChild(contentPara);
+
+                        var likeButton = document.createElement("button");
+                        var likeIcon = document.createElement("img");
+                        likeIcon.src = "source/like_icon.png";
+                        likeIcon.alt = "Like";
+                        likeButton.appendChild(likeIcon);
+                        likeButton.classList.add("like-button");
+
+                        var likeCountSpan = document.createElement("span");
+                        likeCountSpan.textContent = item.like_count; // Placeholder for like count
+                        likeCountSpan.classList.add("like-count");
+                        likeButton.appendChild(likeCountSpan);
+
+                        var commentButton = document.createElement("button");
+                        var commentIcon = document.createElement("img");
+                        commentIcon.src = "source/comment_icon.png";
+                        commentIcon.alt = "Comment";
+                        commentButton.appendChild(commentIcon);
+                        commentButton.classList.add("comment-button");
+
+                        var commentCountSpan = document.createElement("span");
+                        commentCountSpan.textContent = item.comment_count; // Placeholder for comment count
+                        commentCountSpan.classList.add("comment-count");
+                        commentButton.appendChild(commentCountSpan);
+
+                        newsFeedItem.appendChild(likeButton);
+                        newsFeedItem.appendChild(commentButton);
+                        newsFeedContainer.appendChild(newsFeedItem);
+
+                        var likeXhr = new XMLHttpRequest();
+                        var likeUrl = "https://tokusever491.online/phpFiles/getLike_ByUserID-NewsFeedId.php";
+                        var params = "user_id=" + encodeURIComponent(user_id) + "&news_feed_id=" + encodeURIComponent(item.id);
+
+                        likeXhr.open("POST", likeUrl, true);
+                        likeXhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                        
+                        likeXhr.onload = function () {
+                           var likeData = JSON.parse(likeXhr.responseText);
+                           if(likeData[0] != null)
+                           {
+                               if(likeData[0].is_liked == "1")
+                               {
+                                   likeIcon.src = "source/liked_icon.png";
+                               }
+                           }
+                        };
+
+                        likeXhr.onerror = function () {
+                            console.error("Error fetching like data. Network error.");
+                        };
+
+                        likeXhr.send(params);
+                    });
+                } else {
+                    console.error("Error fetching data. Status code: " + xhr.status);
+                }
+            };
+            xhr.onerror = function () {
+                console.error("Error fetching data. Network error.");
+            };
+            xhr.send();
+        }
+
+        fetchAndDisplayNewsFeed();
+
+    </script>
+
+    <style>
+        .news-feed-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+            float: left;
+        }
+
+        .user-name {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .content {
+            clear: both;
+            margin-top: 5px;
+            margin-bottom: 40px;
+        }
+
+        .like-button,
+        .comment-button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            bottom: 10px;
+        }
+
+        .like-button {
+            left: 10px;
+        }
+
+        .comment-button {
+            right: 10px;
+        }
+
+        .like-button img,
+        .comment-button img {
+            width: 30px;
+            height: 30px;
+            vertical-align: middle;
+        }
+    </style>
+</body>
+
+</html>

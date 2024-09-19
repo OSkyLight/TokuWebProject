@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <link rel="icon" type="image/jpg" href="source/icon.jpg">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            background-image: url('source/background.jpg');
+            background-size: cover;
+            background-position: center; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #login-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%
+        }
+        
+        
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="button"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        input[type="button"]:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #result.error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h2>Sign In</h2>
+        <form>
+            <label for="txt_username">Username:</label><br>
+            <input type="text" id="txt_username" name="username" required><br><br>
+            <label for="txt_password">Password:</label><br>
+            <input type="password" id="txt_password" name="password" required><br><br>
+            <input type="button" value="Sign In" id="btn_signIn" onclick="signIn()">
+            <input type="button" value="Sign Up" id="btn_goToSignUp" onclick="gotoSignUp()">
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function signIn() {
+            console.log("a");
+            var username = document.getElementById("txt_username").value;
+            var password = document.getElementById("txt_password").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "phpFiles/login.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            var data = "username=" + encodeURIComponent(username) + "&pass=" + encodeURIComponent(password);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.length > 0) {
+                            document.getElementById("result").textContent = "Sign In successful!";
+                            document.getElementById("result").className = "";
+                            var user_id = response[0].id;
+                            window.location.href = "HomePage.html?user_id=" + user_id;
+                        } else {
+                            document.getElementById("result").textContent = "Invalid username or password";
+                            document.getElementById("result").className = "error";
+                        }
+                    } else {
+                        document.getElementById("result").textContent = "Error: " + xhr.status;
+                        document.getElementById("result").className = "error";
+                    }
+                }
+            };
+            xhr.send(data);
+        } // <-- Added missing closing curly brace
+
+        function gotoSignUp() {
+            window.location.href = "SignUp.html";
+        }
+    </script>
+</body>
+</html>
